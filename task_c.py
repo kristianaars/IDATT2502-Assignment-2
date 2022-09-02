@@ -3,30 +3,38 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 x_train = torch.tensor([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]).reshape(-1, 2)
-y_train = torch.tensor([1.0, 1.0, 1.0, 0.0]).reshape(-1, 1)
+y_train = torch.tensor([0.0, 1.0, 1.0, 0.0]).reshape(-1, 1)
 
 class SigmoidRegressionModel:
 
     def __init__(self):
-        self.W = torch.tensor([[0.0], [0.0]], requires_grad=True)
-        self.b = torch.tensor([[0.0]], requires_grad=True)
+        self.W_1 = torch.tensor([[10.0, -10.0], [10.0, -10.0]], requires_grad=True)
+        self.b_1 = torch.tensor([[-5.0, 15]], requires_grad=True)
+        self.W_2 = torch.tensor([[10.0], [10.0]], requires_grad=True)
+        self.b_2 = torch.tensor([[-18.0]], requires_grad=True)
+
+    def f1(self, x):
+        return torch.sigmoid(x @ self.W_1 + self.b_1)
+
+    def f2(self, x):
+        return torch.sigmoid(x @ self.W_2 + self.b_2)
 
     def f(self, x):
-        return torch.sigmoid(x @ self.W + self.b)
+        return self.f2(self.f1(x))
 
     def loss(self, x, y):
         return torch.mean(torch.square(self.f(x) - y))
 
 model = SigmoidRegressionModel()
 
-optimizer = torch.optim.SGD([model.W, model.b], 0.1)
-for epoch in range(5000):
+optimizer = torch.optim.SGD([model.W_1, model.b_1, model.W_2, model.b_2], 0.05)
+for epoch in range(10000):
     model.loss(x_train, y_train).backward()
     optimizer.step()
 
     optimizer.zero_grad()
 
-print("W = %s, b = %s, loss = %s" % (model.W.data, model.b.data, model.loss(x_train, y_train).data))
+print("W_1 = %s, b_1 = %s, W_2 = %s, b_2 = %s, loss = %s" % (model.W_1.data, model.b_1.data, model.W_2.data, model.b_2.data, model.loss(x_train, y_train).data))
 
 # Visualize result
 ax = plt.figure().add_subplot(111, projection='3d')
